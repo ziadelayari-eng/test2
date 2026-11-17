@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books Explorer</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- ==================== NAVBAR ==================== -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#hero">
+                <i class="bi bi-book-half me-2"></i>Books Explorer
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#hero">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#books">Books</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#favorites-section">Favorites</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                </ul>
+                <!-- Auth Buttons -->
+                <div class="ms-lg-3" id="authButtons">
+                    <button class="btn btn-outline-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                    <button class="btn btn-light btn-sm text-success fw-bold" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
+                </div>
+                <!-- User Info (shown when logged in) -->
+                <div class="ms-lg-3 d-none" id="userInfo">
+                    <span class="text-white me-2"><i class="bi bi-person-circle me-1"></i><span id="userName"></span></span>
+                    <button class="btn btn-outline-light btn-sm" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ==================== HERO SECTION ==================== -->
+    <section id="hero" class="hero-section d-flex align-items-center">
+        <div class="container text-center text-white">
+            <h1 class="display-3 fw-bold mb-3">Discover Your Next Great Read</h1>
+            <p class="lead mb-4 mx-auto" style="max-width: 600px;">
+                Explore millions of books from the Open Library. Search by title, author, or genre and build your personal favorites collection.
+            </p>
+            <a href="#books" class="btn btn-light btn-lg text-success fw-bold px-5 shadow">
+                <i class="bi bi-search me-2"></i>Explore Books
+            </a>
+        </div>
+    </section>
+
+    <!-- ==================== BOOKS SECTION ==================== -->
+    <section id="books" class="py-5">
+        <div class="container">
+            <h2 class="text-center text-success fw-bold mb-2">Browse Books</h2>
+            <p class="text-center text-muted mb-4">Search, filter by genre, and discover amazing books</p>
+
+            <!-- Search Bar -->
+            <div class="row justify-content-center mb-4">
+                <div class="col-lg-8">
+                    <form id="searchForm" class="input-group input-group-lg shadow-sm">
+                        <select class="form-select" id="searchType" style="max-width: 150px;">
+                            <option value="title">Title</option>
+                            <option value="author">Author</option>
+                        </select>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search for books..." required>
+                        <button class="btn btn-success" type="submit">
+                            <i class="bi bi-search me-1"></i>Search
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Subject / Genre Filter -->
+            <div class="text-center mb-4" id="subjectFilter">
+                <span class="text-muted me-2 fw-semibold">Genres:</span>
+                <button class="btn btn-outline-success btn-sm m-1 genre-btn" data-subject="fantasy">Fantasy</button>
+                <button class="btn btn-outline-success btn-sm m-1 genre-btn" data-subject="science_fiction">Sci-Fi</button>
+                <button class="btn btn-outline-success btn-sm m-1 genre-btn" data-subject="romance">Romance</button>
+                <button class="btn btn-outline-success btn-sm m-1 genre-btn" data-subject="mystery">Mystery</button>
+                <button class="btn btn-outline-success btn-sm m-1 genre-btn" data-subject="thriller">Thriller</button>
+                <button class="btn btn-outline-success btn-sm m-1 genre-btn" data-subject="horror">Horror</button>
+                <button class="btn btn-outline-success btn-sm m-1 genre-btn" data-subject="history">History</button>
+                <button class="btn btn-outline-success btn-sm m-1 genre-btn" data-subject="poetry">Poetry</button>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div class="text-center d-none" id="loadingSpinner">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-2">Fetching books...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="alert alert-danger d-none text-center" id="errorMessage" role="alert"></div>
+
+            <!-- Books Grid -->
+            <div class="row g-4" id="booksGrid">
+                <!-- Book cards will be rendered here dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FAVORITES SECTION ==================== -->
+    <section id="favorites-section" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center text-success fw-bold mb-2">
+                <i class="bi bi-heart-fill me-2"></i>My Favorites
+            </h2>
+            <p class="text-center text-muted mb-4">Your personally curated reading list</p>
+
+            <!-- Empty State -->
+            <div class="text-center d-none" id="favoritesEmpty">
+                <i class="bi bi-bookmark-heart text-muted" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">No favorites yet. Click the <i class="bi bi-heart"></i> on any book to add it here!</p>
+            </div>
+
+            <!-- Favorites Grid -->
+            <div class="row g-4" id="favoritesGrid">
+                <!-- Favorite book cards rendered here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== ABOUT SECTION ==================== -->
+    <section id="about" class="py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2 class="text-success fw-bold mb-3">About Books Explorer</h2>
+                    <p class="text-muted">
+                        Books Explorer is a responsive web application that connects you with millions of books
+                        from the <strong>Open Library</strong> — one of the largest open book databases in the world.
+                    </p>
+                    <p class="text-muted">
+                        Search by title or author, browse by genre, view detailed book information, and
+                        save your favorite reads to a personalized collection stored right in your browser.
+                    </p>
+                    <div class="row mt-4">
+                        <div class="col-4 text-center">
+                            <h3 class="text-success fw-bold">10M+</h3>
+                            <small class="text-muted">Books Available</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <h3 class="text-success fw-bold">8+</h3>
+                            <small class="text-muted">Genres</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <h3 class="text-success fw-bold">Free</h3>
+                            <small class="text-muted">Open API</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="about-illustration p-5 bg-success bg-opacity-10 rounded-4">
+                        <i class="bi bi-book-half text-success" style="font-size: 8rem;"></i>
+                        <p class="text-success fw-semibold mt-3">Powered by Open Library API</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-success text-white text-center py-4">
+        <div class="container">
+            <p class="mb-1">&copy; 2026 Books Explorer. All rights reserved.</p>
+            <small>Built with Bootstrap 5 &amp; Open Library API</small>
+        </div>
+    </footer>
+
+    <!-- ==================== LOGIN MODAL ==================== -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="loginModalLabel"><i class="bi bi-box-arrow-in-right me-2"></i>Login</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="loginForm" novalidate>
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="loginEmail" placeholder="email@example.com" required>
+                            <div class="invalid-feedback" id="loginEmailError">Please enter a valid email.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" placeholder="Enter password" required>
+                            <div class="invalid-feedback" id="loginPasswordError">Password is required.</div>
+                        </div>
+                        <!-- Alert Messages -->
+                        <div class="alert alert-success d-none" id="loginSuccess"></div>
+                        <div class="alert alert-danger d-none" id="loginError"></div>
+                        <button type="submit" class="btn btn-success w-100 fw-bold">Login</button>
+                    </form>
+                    <p class="text-center mt-3 mb-0 text-muted small">
+                        Don't have an account? 
+                        <a href="#" class="text-success" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">Register</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== REGISTER MODAL ==================== -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="registerModalLabel"><i class="bi bi-person-plus me-2"></i>Register</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="registerForm" novalidate>
+                        <div class="mb-3">
+                            <label for="regName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="regName" placeholder="Your full name" required>
+                            <div class="invalid-feedback" id="regNameError">Name is required.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regEmail" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="regEmail" placeholder="email@example.com" required>
+                            <div class="invalid-feedback" id="regEmailError">Please enter a valid email.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="regPassword" placeholder="Min 8 characters" required>
+                            <div class="invalid-feedback" id="regPasswordError">Password must be at least 8 characters.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regConfirmPassword" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="regConfirmPassword" placeholder="Confirm password" required>
+                            <div class="invalid-feedback" id="regConfirmError">Passwords do not match.</div>
+                        </div>
+                        <!-- Alert Messages -->
+                        <div class="alert alert-success d-none" id="registerSuccess"></div>
+                        <div class="alert alert-danger d-none" id="registerError"></div>
+                        <button type="submit" class="btn btn-success w-100 fw-bold">Register</button>
+                    </form>
+                    <p class="text-center mt-3 mb-0 text-muted small">
+                        Already have an account? 
+                        <a href="#" class="text-success" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">Login</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== BOOK DETAILS MODAL ==================== -->
+    <div class="modal fade" id="bookDetailModal" tabindex="-1" aria-labelledby="bookDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="bookDetailModalLabel">Book Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <img id="detailCover" src="" alt="Book Cover" class="img-fluid rounded shadow" style="max-height: 400px;">
+                        </div>
+                        <div class="col-md-8">
+                            <h3 class="fw-bold text-success" id="detailTitle"></h3>
+                            <p class="text-muted mb-2"><i class="bi bi-person me-2"></i><span id="detailAuthor"></span></p>
+                            <p class="text-muted mb-2"><i class="bi bi-calendar me-2"></i>First Published: <span id="detailYear"></span></p>
+                            <p class="text-muted mb-3"><i class="bi bi-tags me-2"></i>Subjects: <span id="detailSubjects"></span></p>
+                            <hr>
+                            <button class="btn btn-outline-success" id="detailFavBtn">
+                                <i class="bi bi-heart me-1"></i>Add to Favorites
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="js/app.js"></script>
+</body>
+</html>
